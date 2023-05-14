@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tables</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Подключение стилей Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Подключение скриптов Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-container button {
+            margin-right: 10px;
+        }
+    </style>
+
+</head>
+<body>
+<h1>Tables</h1>
+
+<div>
+    <button class="btn btn-primary" onclick="showTable('users')">Table Users</button>
+    <button class="btn btn-primary" onclick="showTable('lunches')">Table Lunches</button>
+    <button class="btn btn-primary" onclick="clearVotes()">Clear Votes</button>
+</div>
+
+<!-- Таблица Users -->
+<table id="tableUsers" style="display: none;">
+    <thead>
+    <tr>
+        <th>Email</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Password</th>
+        <th>Role</th>
+        <th>Voted</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Заполнение данными из базы данных -->
+    <tr th:each="user : ${users}">
+        <td><input type="text" th:value="${user.email}" readonly></td>
+        <td><input type="text" th:value="${user.firstName}" readonly></td>
+        <td><input type="text" th:value="${user.lastName}" readonly></td>
+        <td><input type="text" th:value="${user.password}" readonly></td>
+        <td><input type="text" th:value="${user.roles}" readonly></td>
+        <td><input type="text" th:value="${user.voted}" readonly></td>
+        <td><button class="btn btn-primary" th:attr="data-userid=${user.id}" onclick="editUser(this, this.getAttribute('data-userid'))">Edit</button></td>
+        <td><button type="button" th:attr="data-userid=${user.id}" onclick="deleteUser(this.getAttribute('data-userid'))">
+            Delete</button></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Таблица Lunches -->
+<table id="tableLunches" style="display: none;">
+    <thead>
+    <tr>
+        <th>Restaurant</th>
+        <th>Starter</th>
+        <th>Main Course</th>
+        <th>Salad</th>
+        <th>Dessert</th>
+        <th>Drinks</th>
+        <th>Votes</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Заполнение данными из базы данных -->
+    <tr th:each="lunch : ${lunches}">
+        <td><input type="text" th:value="${lunch.restaurantName}" readonly></td>
+        <td><input type="text" th:value="${lunch.starter}" readonly></td>
+        <td><input type="text" th:value="${lunch.mainCourse}" readonly></td>
+        <td><input type="text" th:value="${lunch.salad}" readonly></td>
+        <td><input type="text" th:value="${lunch.dessert}" readonly></td>
+        <td><input type="text" th:value="${lunch.drinks}" readonly></td>
+        <td><input type="text" th:value="${lunch.votes}" readonly></td>
+        <td><button class="btn btn-primary" th:attr="data-lunchId=${lunch.id}" onclick="editLunch(this, this.getAttribute('data-lunchId'))">Edit</button></td>
+        <td><button type="button" th:attr="data-lunchId=${lunch.id}" onclick="deleteLunch(this.getAttribute('data-lunchId'))">
+            Delete</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<div id="addUserForm" style="display: none;">
+    <h2>Добавить пользователя</h2>
+    <div>
+        <label>Email:</label>
+        <input type="text" id="newUserEmail">
+    </div>
+    <div>
+        <label>First Name:</label>
+        <input type="text" id="newUserFirstName">
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <input type="text" id="newUserLastName">
+    </div>
+    <div>
+        <label>Password:</label>
+        <input type="password" id="newUserPassword">
+    </div>
+    <div>
+        <label>Role:</label>
+        <input type="role" id="newUserRole">
+    </div>
+    <button class="btn btn-primary" onclick="addUser()">Добавить</button>
+</div>
+
+<div id="addLunchForm" style="display: none;">
+    <h2>Добавить позицию</h2>
+    <div>
+        <label>Restaurant Name:</label>
+        <input type="text" id="newRestaurant">
+    </div>
+    <div>
+        <label>Starter:</label>
+        <input type="text" id="newStarter">
+    </div>
+    <div>
+        <label>Main Course:</label>
+        <input type="text" id="newMainCourse">
+    </div>
+    <div>
+        <label>Salad:</label>
+        <input type="text" id="newSalad">
+    </div>
+    <div>
+        <label>Dessert:</label>
+        <input type="text" id="newDesert">
+    </div>
+    <div>
+        <label>Drinks:</label>
+        <input type="text" id="newDrinks">
+    </div>
+    <button class="btn btn-primary" onclick="addLunch()">Добавить</button>
+</div>
+
+<script>
+
+
+    function saveLunch(button, lunchId) {
+        const row = button.parentNode.parentNode;
+        const inputs = row.querySelectorAll('input');
+        // Получить значения из полей ввода
+        const restaurantName = inputs[0].value;
+        const starter = inputs[1].value;
+        const mainCourse = inputs[2].value;
+        const salad = inputs[3].value;
+        const dessert = inputs[4].value;
+        const drinks = inputs[5].value;
+        const votes = inputs[6].value;
+        const lunch = {
+            id: lunchId,
+            restaurantName: restaurantName,
+            starter: starter,
+            mainCourse: mainCourse,
+            salad: salad,
+            dessert: dessert,
+            drinks: drinks,
+            votes: votes
+        };
+        fetch('/api/lunches/' + lunchId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(lunch)
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Позиция успешно обновлена');
+                    location.reload();
+                } else {
+                    console.error('Ошибка');
+                    alert('Ошибка');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при выполнении запроса на обновление позиции:', error);
+            });
+    }
+
+    function saveUser(button, userId) {
+        const row = button.parentNode.parentNode;
+        const inputs = row.querySelectorAll('input');
+
+        // Получить значения из полей ввода
+        const email = inputs[0].value;
+        const firstName = inputs[1].value;
+        const lastName = inputs[2].value;
+        const password = inputs[3].value;
+        const roles = inputs[4].value.replace("[","").replace("]","");
+        const voted = inputs[5].value;
+        const user = {
+            id: userId,
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            password: password,
+            roles: [roles],
+            voted: voted
+        };
+        fetch('/api/users/' + userId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Пользователь успешно обновлен');
+                    location.reload();
+                } else {
+                    console.error('Ошибка');
+                    alert('Ошибка');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при обновлении:', error);
+            });
+    }
+
+    function editLunch(button,lunchId) {
+        const row = button.parentNode.parentNode;
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => input.removeAttribute('readonly'));
+        button.innerText = 'Save';
+        button.onclick = function() {
+            saveLunch(button, lunchId);
+        };
+    }
+
+    function editUser(button,userId) {
+        const row = button.parentNode.parentNode;
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => input.removeAttribute('readonly'));
+        button.innerText = 'Save';
+        button.onclick = function() {
+            saveUser(button, userId);
+        };
+    }
+    function showTable(tableType) {
+        if (tableType === 'users') {
+            document.getElementById('tableUsers').style.display = 'table';
+            document.getElementById('tableLunches').style.display = 'none';
+            document.getElementById('addUserForm').style.display = 'block';
+            document.getElementById('addLunchForm').style.display = 'none';
+        } else if (tableType === 'lunches') {
+            document.getElementById('tableUsers').style.display = 'none';
+            document.getElementById('tableLunches').style.display = 'table';
+            document.getElementById('addUserForm').style.display = 'none';
+            document.getElementById('addLunchForm').style.display = 'block';
+        }
+    }
+
+    function deleteUser(userId){
+        fetch('/api/users/' + userId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }})
+            .then(response => {
+                if (response.ok) {
+                    console.log('Пользователь успешно удален');
+                    location.reload();
+                } else {
+                    console.error('Ошибка при удалении пользователя');
+                    alert('Ошибка при удалении пользователя');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при выполнении запроса на удаление пользователя:', error);
+            });
+    }
+    function deleteLunch(lunchId) {
+        fetch('/api/lunches/' + lunchId, {
+            method: 'DELETE'
+        })
+                .then(function(response) {
+                    if (response.status === 204) {
+                        alert('Lunch deleted successfully.');
+                        // Reload the page to update the table
+                        location.reload();
+                    } else {
+                        alert('Failed to delete lunch.');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                });
+    }
+
+    function addUser() {
+        const newUserEmail = document.getElementById('newUserEmail').value;
+        const newUserFirstName = document.getElementById('newUserFirstName').value;
+        const newUserLastName = document.getElementById('newUserLastName').value;
+        const newUserPassword = document.getElementById('newUserPassword').value;
+        const newUserRole = document.getElementById('newUserRole').value;
+
+        const user = {
+            email: newUserEmail,
+            firstName: newUserFirstName,
+            lastName: newUserLastName,
+            password: newUserPassword,
+            roles: [newUserRole]
+        };
+
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+            .then(function(response) {
+                if (response.status === 201) {
+                    // Успешная регистрация
+                    alert('Регистрация прошла успешно!');
+                    location.reload();
+
+                    // Дополнительные действия после успешной регистрации
+                } else {
+                    // Ошибка регистрации
+                    alert('Ошибка регистрации. Попробуйте снова.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Произошла ошибка:', error);
+            });
+    }
+
+    function addLunch() {
+        const newRestaurant = document.getElementById('newRestaurant').value;
+        const newStarter = document.getElementById('newStarter').value;
+        const newMainCourse = document.getElementById('newMainCourse').value;
+        const newSalad = document.getElementById('newSalad').value;
+        const newDesert = document.getElementById('newDesert').value;
+        const newDrinks = document.getElementById('newDrinks').value;
+
+        const lunch = {
+            restaurantName: newRestaurant,
+            starter: newStarter,
+            mainCourse: newMainCourse,
+            salad: newSalad,
+            dessert: newDesert,
+            drinks: newDrinks,
+            votes: '0'
+        };
+
+        fetch('/api/lunches', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(lunch)
+        })
+            .then(function(response) {
+                if (response.status === 201) {
+                    // Успешная регистрация
+                    alert('Позиция добавлена успешно!');
+                    location.reload();
+
+                    // Дополнительные действия после успешной регистрации
+                } else {
+                    // Ошибка регистрации
+                    alert('Ошибка регистрации. Попробуйте снова.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Произошла ошибка:', error);
+            });
+    }
+
+    function clearVotes() {
+        fetch('/api/clear', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(function (response) {
+                if (response.status === 204) {
+                    alert('Результаты голосов сброшены');
+                    location.reload();
+                } else {
+                    alert('Ошибка.');
+                }
+            })
+            .catch(function (error) {
+                console.error('Произошла ошибка:', error);
+            });
+    }
+</script>
+</body>
+</html>
