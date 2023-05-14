@@ -1,2 +1,33 @@
-# LunchVotingSystem
-TopJava graduation project
+Raw version of LunchVotingSystem built on technical requirement:
+//
+Design and implement a REST API using Hibernate/Spring/SpringMVC (Spring-Boot preferred!) without frontend.
+
+The task is:
+
+Build a voting system for deciding where to have lunch.
+
+2 types of users: admin and regular users
+Admin can input a restaurant and it's lunch menu of the day (2-5 items usually, just a dish name and price)
+Menu changes each day (admins do the updates)
+Users can vote for a restaurant they want to have lunch at today
+Only one vote counted per user
+If user votes again the same day:
+If it is before 11:00 we assume that he changed his mind.
+If it is after 11:00 then it is too late, vote can't be changed
+Each restaurant provides a new menu each day.
+//
+
+Mapping:
+/ - voting page
+/register - user registration
+/login - user authentication
+
+REST Mapping:
+POST /api/lunches/ - save lunch row
+PUT /api/lunches/{id} - update lunch row
+DELETE /api/lunches/{id} - delete lunch row
+POST /api/users/ - save users row
+PUT /api/users/{id} - update users row
+DELETE /api/users/{id} - delete users row
+GET api/vote/{id} - vote for lunch
+GET api/clear - restore votes
